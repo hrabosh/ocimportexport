@@ -1,0 +1,27 @@
+{
+    "name": "hrabo/ocimportexport",
+    "type": "library",
+    "autoload": {
+        "psr-4": {
+            "Hrabo\\Ocimportexport\\": "src/"
+        }
+    },
+    "authors": [
+        {
+            "name": "Jan Hrabovsky",
+            "email": "hrabovskyjan1@gmail.com"
+        }
+    ],
+    "require": {
+        "phpoffice/phpspreadsheet": "^2.2",
+        "maatwebsite/excel": "^2.1",
+        "illuminate/database": "^5.4",
+        "illuminate/support": "^5.4",
+        "symfony/console": "^6.4"
+    },
+    "config": {
+        "allow-plugins": {
+            "kylekatarnls/update-helper": true
+        }
+    }
+}
