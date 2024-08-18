@@ -8,10 +8,11 @@ use Illuminate\Database\Eloquent\Model;
 class ProductSpecial extends Model
 {
     use HasFactory;
-    protected $table = DB_PREFIX . 'product_special';
+    protected $table = 'product_special';
     protected $primaryKey = 'product_special_id'; // Primary key
 
-    public $incrementing = false;
+    public $incrementing = true;
+    public $timestamps = false;
     protected $fillable = [
         'product_id',
         'customer_group_id',

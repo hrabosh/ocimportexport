@@ -9,10 +9,11 @@ class ProductDiscount extends Model
 {
     use HasFactory;
 
-    protected $table = DB_PREFIX . 'product_discount';
+    protected $table = 'product_discount';
     protected $primaryKey = 'product_discount_id'; // Primary key
 
-    public $incrementing = false;
+    public $incrementing = true;
+    public $timestamps = false;
     protected $fillable = [
         'product_id',
         'customer_group_id',

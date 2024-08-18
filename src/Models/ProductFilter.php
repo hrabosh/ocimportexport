@@ -9,10 +9,11 @@ class ProductFilter extends Model
 {
     use HasFactory;
 
-    protected $table = DB_PREFIX .'product_filter'; // Table name
+    protected $table = 'product_filter'; // Table name
     protected $primaryKey = 'product_id'; // Primary key
 
     public $incrementing = false;
+    public $timestamps = false;
     protected $fillable = [
         'product_id',
         'filter_id'

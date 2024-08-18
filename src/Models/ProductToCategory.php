@@ -9,10 +9,11 @@ class ProductToCategory extends Model
 {
     use HasFactory;
 
-    protected $table = DB_PREFIX . 'product_to_category';
+    protected $table = 'product_to_category';
     protected $primaryKey = 'product_id'; // Primary key
 
     public $incrementing = false;
+    public $timestamps = false;
     protected $fillable = [
         'product_id',
         'category_id'

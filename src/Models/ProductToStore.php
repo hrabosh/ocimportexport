@@ -5,22 +5,20 @@ namespace OpenCartImporter\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
-class ProductImage extends Model
+Class ProductToStore extends Model
 {
     use HasFactory;
 
-    protected $table = 'product_image'; // Table name
-    protected $primaryKey = 'product_image_id'; // Primary key
+    protected $table = 'product_to_store';
+    protected $primaryKey = 'product_id';
 
-    public $incrementing = true;
+    public $incrementing = false;
     public $timestamps = false;
     protected $fillable = [
         'product_id',
-        'image',
-        'sort_order'
+        'store_id'
     ];
 
-    // Define relationship
     public function product()
     {
         return $this->belongsTo(Product::class, 'product_id', 'product_id');

@@ -9,10 +9,11 @@ class ProductAttribute extends Model
 {
     use HasFactory;
 
-    protected $table = DB_PREFIX . 'product_attribute'; // Table name
+    protected $table = 'product_attribute'; // Table name
     protected $primaryKey = 'product_attribute_id'; // Primary key
 
-    public $incrementing = false;
+    public $incrementing = true;
+    public $timestamps = false;
     protected $fillable = [
         'product_id',
         'attribute_id',
