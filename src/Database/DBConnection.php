@@ -29,7 +29,7 @@ class DBConnection
             'username'  => $db['username'],
             'password'  => $db['password'],
             'charset'   => 'utf8',
-            'collation' => 'utf8mb4_unicode_ci',
+            'collation' => 'utf8_unicode_ci',
             'prefix'    => $db['prefix'],
         ]);
 

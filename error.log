@@ -1,0 +1,27 @@
+[27-Aug-2024 16:05:44 Europe/Berlin] Custom error logging enabled.
+[27-Aug-2024 16:14:44 Europe/Berlin] Custom error logging enabled.
+[27-Aug-2024 16:20:11 Europe/Berlin] Custom error logging enabled.
+[27-Aug-2024 16:27:19 Europe/Berlin] Custom error logging enabled.
+[27-Aug-2024 16:34:18 Europe/Berlin] Custom error logging enabled.
+[27-Aug-2024 16:35:33 Europe/Berlin] Custom error logging enabled.
+[27-Aug-2024 16:37:13 Europe/Berlin] Custom error logging enabled.
+[27-Aug-2024 16:44:31 Europe/Berlin] Custom error logging enabled.
+[27-Aug-2024 16:51:17 Europe/Berlin] PHP Fatal error:  Allowed memory size of 268435456 bytes exhausted (tried to allocate 35419450 bytes) in /var/www/hrabovskyjan.cz/phpspreadsheet/ocimportexport/vendor/phpoffice/phpspreadsheet/src/PhpSpreadsheet/Reader/Xlsx.php on line 371
+[27-Aug-2024 16:58:49 Europe/Berlin] Custom error logging enabled.
+[27-Aug-2024 17:06:03 Europe/Berlin] PHP Fatal error:  Allowed memory size of 268435456 bytes exhausted (tried to allocate 35419450 bytes) in /var/www/hrabovskyjan.cz/phpspreadsheet/ocimportexport/vendor/phpoffice/phpspreadsheet/src/PhpSpreadsheet/Reader/Xlsx.php on line 371
+[27-Aug-2024 17:07:16 Europe/Berlin] Custom error logging enabled.
+[27-Aug-2024 17:14:37 Europe/Berlin] Current memory usage: 232064 KB
+[27-Aug-2024 17:14:37 Europe/Berlin] Peak memory usage: 
+[27-Aug-2024 17:32:55 Europe/Berlin] Custom error logging enabled.
+[27-Aug-2024 17:40:24 Europe/Berlin] Current memory usage: 234112 KB
+[27-Aug-2024 17:40:24 Europe/Berlin] Peak memory usage: 
+[27-Aug-2024 18:09:18 Europe/Berlin] Custom error logging enabled.
+[27-Aug-2024 18:16:06 Europe/Berlin] Custom error logging enabled.
+[27-Aug-2024 18:23:26 Europe/Berlin] Current memory usage: 232064 KB
+[27-Aug-2024 18:23:26 Europe/Berlin] Peak memory usage: 
+[27-Aug-2024 18:23:41 Europe/Berlin] Custom error logging enabled.
+[27-Aug-2024 18:30:55 Europe/Berlin] Current memory usage: 232064 KB
+[27-Aug-2024 18:30:55 Europe/Berlin] Peak memory usage: 
+[27-Aug-2024 18:44:13 Europe/Berlin] Custom error logging enabled.
+[27-Aug-2024 18:51:24 Europe/Berlin] Current memory usage: 232064 KB
+[27-Aug-2024 18:51:24 Europe/Berlin] Peak memory usage: 

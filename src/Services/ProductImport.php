@@ -2,7 +2,6 @@
 
 namespace OpenCartImporter\Services;
 
-use OpenCartImporter\Database\DBConnection;
 use OpenCartImporter\Models\Product;
 use OpenCartImporter\Models\ProductDescription;
 use OpenCartImporter\Models\ProductToCategory;
@@ -28,14 +27,12 @@ class ProductImport
 
     public function import($filePath)
     {
-        
-
         $loader = new ExcelLoader($filePath);
-        $data = $loader->getData();
 
-        foreach (array_chunk($data, $this->batchSize) as $batch) {
-            $this->processBatch($batch, $this->mappings);
-        }
+        $loader->getData(function ($chunk) {
+            $this->processBatch($chunk, $this->mappings);
+        });
+        unset($chunk);
     }
 
     private function processBatch(array $batch, array $mappings)
@@ -82,8 +79,8 @@ class ProductImport
                 if (isset($row[$excelColumn]) && preg_match('/attribute_(\d+)/', $dbColumn, $matches)) {
                     $attributeId = $matches[1];
                     $attributeData[$attributeId] = $row[$excelColumn];
-                }
-            }
+                } 
+            }            
     
             foreach ($mappings['oc_product_filter'] as $excelColumn => $dbColumn) {
                 if (isset($row[$excelColumn])) {
@@ -100,39 +97,36 @@ class ProductImport
                     $descriptions[] = $descriptionData;
                 }
                 if (!empty($categoryData)) {
-                    $categories[] = $categoryData;
+                    $categories[$model] = $categoryData;
                 }
                 if (!empty($attributeData)) {
-                    $attributes[] = $attributeData;
+                    $attributes[$model] = $attributeData;
                 }
                 if (!empty($filterData)) {
-                    $filters[] = $filterData;
+                    $filters[$model] = $filterData;
+               
                 }
             }
         }
 
+        
         // Perform batch operations
         $productIds = $this->updateOrCreateProducts($products);
-
         $this->updateDescriptions($descriptions, $productIds);
         
         $this->updateCategories($categories, $productIds);
         $this->updateAttributes($attributes, $productIds);
-        $this->updateFilters($filters, $productIds);
+        //$this->updateFilters($filters, $productIds);
         $this->updateAdditional($additionalData, $productIds); 
-
-        $endTime = microtime(true);
-        $loadCallTime = $endTime - $start;
-        error_log('ProccesBatch time ' . sprintf('%.4f', $loadCallTime) . ' seconds');
     }
 
     private function updateOrCreateProducts(array $products)
     {
-        Product::upsert(
-            $products,
-            ['model'], // Unique key(s)
-            array_keys(reset($products)) // Fields to update
-        );
+            Product::upsert(
+                $products,
+                ['model'], // Unique key(s)
+                array_keys(reset($products)) // Fields to update
+            );
     
         // Retrieve product IDs after upsert
         $productIds = Product::whereIn('model', array_column($products, 'model'))
@@ -172,7 +166,7 @@ class ProductImport
                 ];
             })
             ->all();
-
+        
         // Perform upsert operation
         ProductToCategory::upsert(
             $categoryRecords,

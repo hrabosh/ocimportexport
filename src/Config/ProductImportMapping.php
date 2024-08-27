@@ -27,6 +27,7 @@ return [
                 // Add other mappings for the oc_product_to_category table
         ],
         'oc_product_attribute' => [
+            'kód' => 'model',
             'lang' => 'language_id',
             'Aranžmá' => 'attribute_1',
             'Nakladatel' => 'attribute_5',

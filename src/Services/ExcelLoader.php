@@ -1,19 +1,10 @@
 <?php
 namespace OpenCartImporter\Services;
 
-ini_set('memory_limit', '2048M');
+ini_set('memory_limit', '512M');
 ini_set('max_execution_time', '1000');
 
 use PhpOffice\PhpSpreadsheet\IOFactory;
-use PhpOffice\PhpSpreadsheet\Reader\Xlsx\ReaderEntityFactory;
-use PhpOffice\PhpSpreadsheet\Worksheet\Worksheet;
-use PhpOffice\PhpSpreadsheet\Cell\Coordinate;
-use Illuminate\Support\Collection;
-use OpenCartImporter\Models\Product;
-use OpenCartImporter\Models\ProductDescription;
-use OpenCartImporter\Models\ProductToCategory;
-use OpenCartImporter\Models\ProductAttribute;
-use OpenCartImporter\Models\ProductFilter;
 
 class ExcelLoader
 {
@@ -23,7 +14,7 @@ class ExcelLoader
         $this->filePath = $filePath;
     }
 
-    public function getData()
+    public function getData(callable $sendData)
     {
         $callStartTime = microtime(true);
 
@@ -31,35 +22,73 @@ class ExcelLoader
         $reader->setReadDataOnly(true); // Only load cell values, not styles or formatting
         $reader->setReadEmptyCells(false);
 
-        $spreadsheet = $reader->load($this->filePath);
+        $chunkFilter = new ChunkReadFilter();
+        $reader->setReadFilter($chunkFilter);
 
-        $callEndTime = microtime(true);
-        $loadCallTime = $callEndTime - $callStartTime;
+        $totalRows = $reader->listWorksheetInfo($this->filePath )[0]['totalRows'];
+        $headings = null;
 
-        error_log('Call time to load spreadsheet file was ' . sprintf('%.4f', $loadCallTime) . ' seconds');
+        for($startRow = 2; $startRow <= $totalRows; $startRow += 1000){
+            $chunkFilter->setRows($startRow, 1000);  
+            $spreadsheet = $reader->load($this->filePath);
 
-        error_log('Current memory usage: ' . (memory_get_usage(true) / 1024) . ' KB');
+            $worksheet = $spreadsheet->getActiveSheet();
 
-        $worksheet = $spreadsheet->getActiveSheet();
+            $chunk = $worksheet->toArray(null, false, false, true);
 
+                        // Remove completely empty rows
+            $chunk = array_filter($chunk, function ($row) {
+                return array_filter($row); // Only keep rows with data
+            });
 
-        error_log("Range Dimensions specified in the xlsx file {$worksheet->calculateWorksheetDimension()} that will be used by the toArray() method");
-        error_log("Range of cells that contain actual data {$worksheet->calculateWorksheetDataDimension()} that can be passed to the rangeToArray() method");
-
-        $data = $worksheet->rangeToArray($worksheet->calculateWorksheetDataDimension(), null, true, true, true);
-
-        $headings = array_shift($data);
-        array_walk(
-            $data,
-            function (&$row) use ($headings) {
-                $row = array_combine($headings, $row);
+            if ($headings === null) {
+                $headings = array_shift($chunk);
+            } else {
+                array_shift($chunk); // Remove the first row from the chunk
             }
-        );
+
+            array_walk(
+                $chunk,
+                function (&$row) use ($headings) {
+                    $row = array_combine($headings, $row);
+                }
+            );
+        
+            echo 'memory before: ' . memory_get_usage(true);
+            $sendData($chunk);
+            echo 'Current memory usage 1: ' . memory_get_usage(true);
+
+            $spreadsheet->disconnectWorksheets();
+            unset($spreadsheet, $chunk);
+            echo 'Current memory usage 2: ' . memory_get_usage(true);
+            sleep(1);
+
+        }
 
         // Echo memory usage
+        //$this->logger->logExecutionTime('Excel loader', $callStartTime, microtime(true));
         error_log('Current memory usage: ' . (memory_get_usage(true) / 1024) . ' KB');
         error_log('Peak memory usage: ' , (memory_get_peak_usage(true) / 1024) , ' KB');
-
-        return $data;
     }
 }
+
+class ChunkReadFilter implements \PhpOffice\PhpSpreadsheet\Reader\IReadFilter
+{
+    private $startRow = 0;
+    private $endRow   = 0;
+
+    /**  Set the list of rows that we want to read  */
+    public function setRows($startRow, $chunkSize) {
+        $this->startRow = $startRow;
+        $this->endRow   = $startRow + $chunkSize;
+    }
+
+    public function readCell($columnAddress, $row, $worksheetName = ''):bool {
+        //  Only read the heading row, and the configured rows
+        if (($row == 1) || ($row >= $this->startRow && $row < $this->endRow)) {
+            return true;
+        }
+        return false;
+    }
+}
+
