@@ -15,7 +15,6 @@ use Illuminate\Support\Facades\DB;
 class ProductImport
 {
     protected $batchSize = 1000; // Number of records to process in each batch
-    protected $modelMap = [];
     protected $language_id = 2;
     protected $mappings = [];
 
@@ -27,7 +26,7 @@ class ProductImport
 
     public function import($filePath)
     {
-        $loader = new ExcelLoader($filePath);
+        $loader = new NativeExcelLoader($filePath);
 
         $loader->getData(function ($chunk) {
             $this->processBatch($chunk, $this->mappings);
@@ -37,6 +36,7 @@ class ProductImport
 
     private function processBatch(array $batch, array $mappings)
     {
+        error_log('Memory before processBatch method: ' . memory_get_usage(true));
         $products = [];
         $descriptions = [];
         $categories = [];
@@ -112,12 +112,22 @@ class ProductImport
         
         // Perform batch operations
         $productIds = $this->updateOrCreateProducts($products);
+        unset($products, $productData);
+        error_log('Memory before updateDescription: ' . memory_get_usage(true));
         $this->updateDescriptions($descriptions, $productIds);
-        
+        unset($descriptions, $descriptionData);
+        error_log('Memory before updateCategories: ' . memory_get_usage(true));
         $this->updateCategories($categories, $productIds);
+        unset($categories, $categoryData);
+        error_log('Memory before updateAttributes: ' . memory_get_usage(true));
         $this->updateAttributes($attributes, $productIds);
         //$this->updateFilters($filters, $productIds);
+        unset($attributes, $attributeData);
+        error_log('Memory before updateAdditional: ' . memory_get_usage(true));
         $this->updateAdditional($additionalData, $productIds); 
+        unset($additionalData);
+
+        error_log('Memory after processBatch method: ' . memory_get_usage(true));
     }
 
     private function updateOrCreateProducts(array $products)

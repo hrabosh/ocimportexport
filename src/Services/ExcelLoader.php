@@ -1,94 +1,92 @@
 <?php
 namespace OpenCartImporter\Services;
 
-ini_set('memory_limit', '512M');
-ini_set('max_execution_time', '1000');
-
 use PhpOffice\PhpSpreadsheet\IOFactory;
 
 class ExcelLoader
 {
     private $filePath;
-    public function __construct($filePath)
+    private $chunkSize = 1000;
+
+    public function __construct($filePath, $chunkSize = 1000)
     {
         $this->filePath = $filePath;
+        $this->chunkSize = $chunkSize;
     }
 
     public function getData(callable $sendData)
     {
-        $callStartTime = microtime(true);
-
         $reader = IOFactory::createReader('Xlsx');
-        $reader->setReadDataOnly(true); // Only load cell values, not styles or formatting
+        $reader->setReadDataOnly(true);
         $reader->setReadEmptyCells(false);
 
         $chunkFilter = new ChunkReadFilter();
         $reader->setReadFilter($chunkFilter);
 
-        $totalRows = $reader->listWorksheetInfo($this->filePath )[0]['totalRows'];
+        $totalRows = $reader->listWorksheetInfo($this->filePath)[0]['totalRows'];
         $headings = null;
 
-        for($startRow = 2; $startRow <= $totalRows; $startRow += 1000){
-            $chunkFilter->setRows($startRow, 1000);  
+        for ($startRow = 2; $startRow <= $totalRows; $startRow += $this->chunkSize) {
+            error_log('Memory startting iteration:' . memory_get_usage(true));
+            $chunkFilter->setRows($startRow, $this->chunkSize);
             $spreadsheet = $reader->load($this->filePath);
-
+            error_log('Memory after loading file:' . memory_get_usage(true));
             $worksheet = $spreadsheet->getActiveSheet();
 
             $chunk = $worksheet->toArray(null, false, false, true);
 
-                        // Remove completely empty rows
-            $chunk = array_filter($chunk, function ($row) {
-                return array_filter($row); // Only keep rows with data
-            });
-
-            if ($headings === null) {
-                $headings = array_shift($chunk);
-            } else {
-                array_shift($chunk); // Remove the first row from the chunk
-            }
-
-            array_walk(
-                $chunk,
-                function (&$row) use ($headings) {
-                    $row = array_combine($headings, $row);
+                 // Remove completely empty rows
+                 $chunk = array_filter($chunk, function ($row) {
+                    return array_filter($row); // Only keep rows with data
+                });
+    
+                if ($headings === null) {
+                    $headings = array_shift($chunk);
+                } else {
+                    array_shift($chunk); // Remove the first row from the chunk
                 }
-            );
-        
-            echo 'memory before: ' . memory_get_usage(true);
+    
+                array_walk(
+                    $chunk,
+                    function (&$row) use ($headings) {
+                        $row = array_combine($headings, $row);
+                    }
+                );
+
+            error_log('memory before processbatch: ' . memory_get_usage(true));
             $sendData($chunk);
-            echo 'Current memory usage 1: ' . memory_get_usage(true);
-
+            error_log('memory after processing:' . memory_get_usage(true));
             $spreadsheet->disconnectWorksheets();
-            unset($spreadsheet, $chunk);
-            echo 'Current memory usage 2: ' . memory_get_usage(true);
-            sleep(1);
-
+            unset($spreadsheet, $chunk, $worksheet);
+            gc_collect_cycles();
+            error_log('memory after unseting in excel: ' . memory_get_usage(true));
         }
 
-        // Echo memory usage
-        //$this->logger->logExecutionTime('Excel loader', $callStartTime, microtime(true));
-        error_log('Current memory usage: ' . (memory_get_usage(true) / 1024) . ' KB');
-        error_log('Peak memory usage: ' , (memory_get_peak_usage(true) / 1024) , ' KB');
+        error_log('Final memory usage: ' . (memory_get_usage(true) / 1024) . ' KB');
+        error_log('Peak memory usage: ' . (memory_get_peak_usage(true) / 1024) . ' KB');
+    }
+
+    private function mapHeadingsToData(array $chunk, array $headings)
+    {
+        return array_map(function ($row) use ($headings) {
+            return array_combine($headings, $row);
+        }, $chunk);
     }
 }
 
 class ChunkReadFilter implements \PhpOffice\PhpSpreadsheet\Reader\IReadFilter
 {
     private $startRow = 0;
-    private $endRow   = 0;
+    private $endRow = 0;
 
-    /**  Set the list of rows that we want to read  */
-    public function setRows($startRow, $chunkSize) {
+    public function setRows($startRow, $chunkSize)
+    {
         $this->startRow = $startRow;
-        $this->endRow   = $startRow + $chunkSize;
+        $this->endRow = $startRow + $chunkSize;
     }
 
-    public function readCell($columnAddress, $row, $worksheetName = ''):bool {
-        //  Only read the heading row, and the configured rows
-        if (($row == 1) || ($row >= $this->startRow && $row < $this->endRow)) {
-            return true;
-        }
-        return false;
+    public function readCell($columnAddress, $row, $worksheetName = ''): bool
+    {
+        return ($row == 1) || ($row >= $this->startRow && $row < $this->endRow);
     }
 }
-

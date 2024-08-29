@@ -1,0 +1,32 @@
+#!/usr/bin/env php
+<?php
+
+require __DIR__ . '/../vendor/autoload.php';
+
+use Symfony\Component\Console\Application;
+
+// Import your services
+use OpenCartImporter\Services\ProductImport;
+
+// Import your command
+use OpenCartImporter\Command\ProductImportCommand;
+
+// Create a new Console Application
+$application = new Application();
+
+$db = [
+    'driver' => 'mysql',
+    'host' => '127.0.0.1',
+    'username' => 'root',
+    'password' => '19962512',
+    'prefix' => 'hk_',
+    'database' => 'opencart',
+];
+// Initialize your services
+$productImport = new ProductImport($db);
+
+// Register your command with the application
+$application->add(new ProductImportCommand($productImport));
+
+// Run the application
+$application->run();

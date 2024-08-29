@@ -1,13 +1,8 @@
 <?php
 namespace OpenCartImporter\Services;
 use OpenCartImporter\Logger\Logger;
-use Monolog\Handler\StreamHandler;
-
-error_reporting(E_ALL);
-ini_set('display_errors', 1);
 
 use OpenCartImporter\Database\DBConnection;
-use OpenCartImporter\Proxy\ProxyGenerator;
 
 class ProductService
 {

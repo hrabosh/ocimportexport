@@ -21,7 +21,9 @@
         "openspout/openspout": "^4.24",
         "phpoffice/phpspreadsheet": "^2.2",
         "monolog/monolog": "^3.7",
-        "mrsuh/php-var-sizeof": "^1.3"
+        "mrsuh/php-var-sizeof": "^1.3",
+        "lekoala/spread-compat": "^0.8.0",
+        "shuchkin/simplexlsx": "^1.1"
     },
     "config": {
         "allow-plugins": {
